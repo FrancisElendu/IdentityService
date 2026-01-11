@@ -13,9 +13,11 @@ namespace Infrastructure.Services.Users
     public class UserService : IUserService
     {
         private readonly UserManager<ApplicationUser> _userManager;
-        public UserService(UserManager<ApplicationUser> userManager)
+        private readonly RoleManager<ApplicationRole> _roleManager;
+        public UserService(UserManager<ApplicationUser> userManager, RoleManager<ApplicationRole> roleManager)
         {
             _userManager = userManager;
+            _roleManager = roleManager;
         }
 
         public async Task<IResponseWrapper> ChangeUserPasswordAsync(ChangePasswordRequest changePassword)
@@ -68,11 +70,6 @@ namespace Infrastructure.Services.Users
             return await ResponseWrapper.FailAsync("No users found.");
         }
 
-        public Task<IResponseWrapper> GetUserByEmailAsync(string email)
-        {
-            throw new NotImplementedException();
-        }
-
         public async Task<IResponseWrapper> GetUserByIdAsync(string userId)
         {
             var userInDb = _userManager.FindByIdAsync(userId);
@@ -82,15 +79,6 @@ namespace Infrastructure.Services.Users
                 return await ResponseWrapper<UserResponse>.SuccessAsync(data: mappedUser);
             }
             return await ResponseWrapper.FailAsync("User not found.");
-        }
-
-        public Task<IResponseWrapper> UpdateUserRolesAsync(UpdateUserRolesRequest updateUserRoles)
-        {
-            throw new NotImplementedException();
-        }
-        public Task<IResponseWrapper> GetUserRolesAsync(string userId)
-        {
-            throw new NotImplementedException();
         }
 
         public async Task<IResponseWrapper> RegisterUserAsync(UserRegistrationRequest userRegistration)
@@ -144,6 +132,80 @@ namespace Infrastructure.Services.Users
                     return await ResponseWrapper.SuccessAsync("User updated successfully.");
                 }
                 return await ResponseWrapper.FailAsync(GetIdentityResultErrorDescription(identityResult));
+            }
+            return await ResponseWrapper.FailAsync("User not found.");
+        }
+
+
+        public async Task<IResponseWrapper> GetUserByEmailAsync(string email)
+        {
+            var userInDb = await _userManager.FindByEmailAsync(email);
+            if (userInDb is not null)
+            {
+                var mappedUser = userInDb.Adapt<UserResponse>();
+                return await ResponseWrapper<UserResponse>.SuccessAsync(data: mappedUser);
+            }
+            return await ResponseWrapper.FailAsync("User not found.");
+        }
+
+        public async Task<IResponseWrapper> UpdateUserRolesAsync(UpdateUserRolesRequest updateUserRoles)
+        {
+            var userInDb = await _userManager.FindByIdAsync(updateUserRoles.UserId);
+            if (userInDb is not null)
+            {
+                if(userInDb.Email == AppCredentials.Email)
+                {
+                    return await ResponseWrapper.FailAsync("Modifying roles for this user is not allowed.");
+                }
+                var currentAssignedUserRoles = await _userManager.GetRolesAsync(userInDb);
+
+                var rolesToBeAssignedToUser = updateUserRoles.Roles
+                    .Where(r => r.IsAssignedToUser == true)
+                    .ToList();
+
+                var identityRemovingResult = await _userManager.RemoveFromRolesAsync(userInDb, currentAssignedUserRoles);
+                if (identityRemovingResult.Succeeded)
+                {
+                    var identityAddingResult = await _userManager.AddToRolesAsync(
+                    userInDb,
+                    rolesToBeAssignedToUser.Select(r => r.RoleName));
+
+                    if (identityAddingResult.Succeeded)
+                    {
+                        return await ResponseWrapper.SuccessAsync("User roles updated successfully.");
+                    }
+                    return await ResponseWrapper.FailAsync(GetIdentityResultErrorDescription(identityAddingResult));
+                }
+                return await ResponseWrapper.FailAsync(GetIdentityResultErrorDescription(identityRemovingResult));
+            }
+            return await ResponseWrapper.FailAsync("User not found.");
+        }
+
+        public async Task<IResponseWrapper> GetUserRolesAsync(string userId)
+        {
+            var userRolesViewModel = new List<UserRoleViewModel>();
+            var userInDb = await _userManager.FindByIdAsync(userId);
+            if (userInDb is not null)
+            {
+                var allRoles = await _roleManager.Roles.ToListAsync();
+                foreach (var role in allRoles)
+                {
+                    var userRoleViewModel = new UserRoleViewModel
+                    {
+                        RoleName = role.Name,
+                        RoleDescription = role.Description,
+                    };
+                    if (await _userManager.IsInRoleAsync(userInDb, role.Name))
+                    {
+                        userRoleViewModel.IsAssignedToUser = true;
+                    }
+                    else
+                    {
+                        userRoleViewModel.IsAssignedToUser = false;
+                    }
+                    userRolesViewModel.Add(userRoleViewModel);
+                }
+                return await ResponseWrapper<List<UserRoleViewModel>>.SuccessAsync(userRolesViewModel);
             }
             return await ResponseWrapper.FailAsync("User not found.");
         }
