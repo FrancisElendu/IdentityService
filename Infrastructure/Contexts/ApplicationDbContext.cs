@@ -46,7 +46,7 @@ namespace Infrastructure.Contexts
                 b.ToTable("RoleClaims", SchemaNames.Identity);
             });
 
-            modelBuilder.Entity<IdentityUserRole<string>>(b =>
+            modelBuilder.Entity<ApplicationUserRole<string>>(b =>
             {
                 b.ToTable("UserRoles", SchemaNames.Identity);
                 b.HasKey(r => new { r.UserId, r.RoleId });
@@ -67,6 +67,5 @@ namespace Infrastructure.Contexts
                 b.ToTable("UserTokens", SchemaNames.Identity);
             });
         }
-        //DbSets
     }
 }
