@@ -17,6 +17,7 @@ builder.Services.AddOpenApi();
 builder.Services.AddDatabase(builder.Configuration);
 builder.Services.AddIdentityService();
 builder.Services.AddIdentitySettings();
+builder.Services.GetTokenSettings(builder.Configuration);
 
 var app = builder.Build();
 

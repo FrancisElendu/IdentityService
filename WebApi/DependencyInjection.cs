@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Authorization;
 using AuthLibrary.Permissions;
 using Infrastructure.Models;
 using Microsoft.AspNetCore.Identity;
+using Application;
+using Microsoft.Extensions.Configuration;
 
 namespace WebApi
 {
@@ -38,6 +40,13 @@ namespace WebApi
                 .AddEntityFrameworkStores<ApplicationDbContext>()
                 .AddDefaultTokenProviders();
             return services;
+        }
+
+        internal static TokenSettings GetTokenSettings(this IServiceCollection services, IConfiguration config)
+        {
+            var tokenSettingsConfig = config.GetSection(nameof(TokenSettings));
+            services.Configure<TokenSettings>(tokenSettingsConfig);
+            return tokenSettingsConfig.Get<TokenSettings>();
         }
     }
 }
