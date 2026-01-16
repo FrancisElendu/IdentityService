@@ -1,3 +1,4 @@
+using Application;
 using Infrastructure;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
@@ -10,14 +11,16 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
-//builder.Services.AddEndpointsApiExplorer();
-//builder.Services.AddSwaggerGen();
+//builder.Services.AddOpenApi();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
 
 builder.Services.AddDatabase(builder.Configuration);
 builder.Services.AddIdentityService();
 builder.Services.AddIdentitySettings();
-builder.Services.GetTokenSettings(builder.Configuration);
+
+builder.Services.AddApplicationServices();
+builder.Services.AddJwtAuthentication(builder.Services.GetTokenSettings(builder.Configuration));
 
 var app = builder.Build();
 
@@ -26,8 +29,8 @@ if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
     await app.SeedDatabase();
-    //app.UseSwagger();
-    //app.UseSwaggerUI();
+    app.UseSwagger();
+    app.UseSwaggerUI();
 }
 
 app.UseHttpsRedirection();
