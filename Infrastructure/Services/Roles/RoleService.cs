@@ -119,6 +119,37 @@ namespace Infrastructure.Services.Roles
             return await ResponseWrapper.FailAsync("Role not found");
         }
 
+
+        public async Task<IResponseWrapper> UpdateUserRolesAsync(UpdateUserRolesRequest updateUserRolesRequest)
+        {
+            var userInDb = await _userManager.FindByIdAsync(updateUserRolesRequest.UserId);
+            if (userInDb is not null)
+            {
+                var isUserAdmin = await _userManager.IsInRoleAsync(userInDb, AppRoles.Admin);
+                if (isUserAdmin)
+                {
+                    return await ResponseWrapper.FailAsync("Cannot update roles for Admin user");
+                }
+                var toBeAssignedRoles = updateUserRolesRequest.Roles
+                    .Where(r => r.IsAssignedToUser == true)
+                    .Select(r => r.RoleName)
+                    .ToList();
+                var currentlyAssignedRoles = await _userManager.GetRolesAsync(userInDb);
+                var removeResult = await _userManager.RemoveFromRolesAsync(userInDb, currentlyAssignedRoles);
+                if (!removeResult.Succeeded)
+                {
+                    return await ResponseWrapper.FailAsync(GetIdentityResultErrorDescription(removeResult));
+                }
+                var addResult = await _userManager.AddToRolesAsync(userInDb, toBeAssignedRoles);
+                if (!addResult.Succeeded)
+                {
+                    return await ResponseWrapper.FailAsync(GetIdentityResultErrorDescription(addResult));
+                }
+                return await ResponseWrapper.SuccessAsync("User roles updated successfully");
+            }
+            return await ResponseWrapper.FailAsync("User not found");
+        }
+
         public async Task<IResponseWrapper> UpdatePermissionsAsync(UpdateRoleClaimsRequest updateRoleClaimsRequest)
         {
             var roleInDb = await _roleManager.FindByIdAsync(updateRoleClaimsRequest.RoleId);

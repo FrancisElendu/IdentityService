@@ -12,5 +12,6 @@ namespace Application.Interfaces.Roles
         Task<IResponseWrapper> DeleteRolesAsync(string roleId);
         Task<IResponseWrapper> UpdatePermissionsAsync(UpdateRoleClaimsRequest updateRoleClaimsRequest);
         Task<IResponseWrapper> GetPermissionsAsync(string roleId);
+        Task<IResponseWrapper> UpdateUserRolesAsync(UpdateUserRolesRequest updateUserRolesRequest);
     }
 }
