@@ -20,6 +20,8 @@ using Newtonsoft.Json;
 using Microsoft.AspNetCore.Http;
 using System.Linq;
 using System.Reflection;
+using Microsoft.OpenApi.Models;
+using System.Collections.Generic;
 
 
 namespace WebApi
@@ -146,5 +148,92 @@ namespace WebApi
             });
             return services;
         }
+
+        internal static IServiceCollection AddSwaggerDocumentation(this IServiceCollection services)
+        {
+            services.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc("v1", new OpenApiInfo
+                {
+                    Title = "Identity Service",
+                    Version = "v1",
+                    License = new OpenApiLicense
+                    {
+                        Name = "MIT License",
+                        Url = new Uri("https://opensource.org/licenses/MIT")
+                    }
+                });
+                var securityScheme = new OpenApiSecurityScheme
+                {
+                    Name = "Authorization",
+                    Description = "Enter JWT Bearer token Bearer {your token here} to access this API",
+                    In = ParameterLocation.Header,
+                    Type = SecuritySchemeType.Http,
+                    //Type = SecuritySchemeType.ApiKey,
+                    Scheme = "bearer",
+                    BearerFormat = "JWT",
+                    Reference = new OpenApiReference
+                    {
+                        Id = JwtBearerDefaults.AuthenticationScheme,
+                        Type = ReferenceType.SecurityScheme
+                    }
+                };
+                c.AddSecurityDefinition(securityScheme.Reference.Id, securityScheme);
+                c.AddSecurityRequirement(new OpenApiSecurityRequirement
+                {
+                    {securityScheme, Array.Empty<string>()}
+                });
+            });
+            return services;
+        }
+
+        //internal static IServiceCollection AddSwaggerDocumentation(this IServiceCollection services)
+        //{
+        //    services.AddSwaggerGen(c =>
+        //    {
+        //        c.SwaggerDoc("v1", new OpenApiInfo
+        //        {
+        //            Title = "Identity Service",
+        //            Version = "v1",
+        //            License = new OpenApiLicense
+        //            {
+        //                Name = "MIT License",
+        //                Url = new Uri("https://opensource.org/licenses/MIT")
+        //            }
+        //        });
+        //        var securityScheme = new OpenApiSecurityScheme
+        //        {
+        //            Name = "Authorization",
+        //            Description = "Enter JWT Bearer token Bearer {your token here} to access this API",
+        //            In = ParameterLocation.Header,
+        //            Type = SecuritySchemeType.Http,
+        //            Scheme = "bearer",
+        //            BearerFormat = "JWT",
+        //            //Reference = new OpenApiReference
+        //            //{
+        //            //    Id = JwtBearerDefaults.AuthenticationScheme,
+        //            //    Type = ReferenceType.SecurityScheme
+        //            //}
+        //        };
+        //        //c.AddSecurityDefinition(securityScheme.Reference.Id, securityScheme);
+        //        c.AddSecurityRequirement(new OpenApiSecurityRequirement
+        //        {
+        //            {
+        //                new OpenApiSecurityScheme
+        //                {
+        //                    Reference = new OpenApiReference
+        //                    {
+        //                        Type = ReferenceType.SecurityScheme,
+        //                        Id = "Bearer",
+        //                    },
+        //                    Scheme = "Bearer",
+        //                    Name = "Bearer",
+        //                    In = ParameterLocation.Header,
+        //                }, new List<string>()
+        //            }, 
+        //        });
+        //    });
+        //    return services;
+        //}
     }
 }

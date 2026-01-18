@@ -1,11 +1,12 @@
-﻿using Application.Interfaces.Users;
+﻿using Application.Features.Users.Validators;
+using Application.Interfaces.Users;
 using MediatR;
 using ResponseResult.Models.Requests.Identity;
 using ResponseResult.Wrappers;
 
 namespace Application.Features.Users.Commands
 {
-    public class UserRegistrationCommand : IRequest<IResponseWrapper>
+    public class UserRegistrationCommand : IRequest<IResponseWrapper>, IValidateMe
     {
         public UserRegistrationRequest UserRegistration { get; set; }
     }

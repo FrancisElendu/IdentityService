@@ -1,4 +1,7 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Application.Pipelines;
+using FluentValidation;
+using MediatR;
+using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
 
 namespace Application
@@ -10,7 +13,9 @@ namespace Application
             // Register application services here
             var assembly = Assembly.GetExecutingAssembly();
             return services
-                .AddMediatR(cfg => cfg.RegisterServicesFromAssemblies(assembly));
+                .AddMediatR(cfg => cfg.RegisterServicesFromAssemblies(assembly))
+                .AddValidatorsFromAssembly(assembly)
+                .AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationPipelineBehavior<,>));
         }
     }
 }

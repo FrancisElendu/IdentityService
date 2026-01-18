@@ -156,7 +156,10 @@ namespace Infrastructure.Services.Token
 
         private string GenerateEncryptedToken(IEnumerable<Claim> claims, SigningCredentials signingCredentials)
         {
-            var token = new JwtSecurityToken(claims: claims,
+            var token = new JwtSecurityToken(
+                issuer: AppClaim.Issuer,
+                audience: AppClaim.Audience,
+                claims: claims,
                 expires: DateTime.UtcNow.AddMinutes(_tokenSettings.TokenExpiryInMinutes),
                 signingCredentials: signingCredentials);
 

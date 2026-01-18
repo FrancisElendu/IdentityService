@@ -50,7 +50,7 @@ namespace WebApi.Controllers
 
         [HttpPut]
         [MustHavePermission(AppService.Identity, AppFeature.Users, AppAction.Update)]
-        public async Task<IActionResult> UpdateUserAsync([FromBody] UpdateUserRequest updateUserRequest)
+        public async Task<IActionResult> UpdateUserDetails([FromBody] UpdateUserRequest updateUserRequest)
         {
             var response = await Sender.Send(new UpdateUserCommand { UpdateUser = updateUserRequest });
             if (response.IsSuccessful)
@@ -62,7 +62,7 @@ namespace WebApi.Controllers
 
         [HttpPut("change-password")]
         [MustHavePermission(AppService.Identity, AppFeature.Users, AppAction.Create)]
-        public async Task<IActionResult> ChangeUserPasswordAsync([FromBody] ChangePasswordRequest changePasswordRequest)
+        public async Task<IActionResult> ChangeUserPassword([FromBody] ChangePasswordRequest changePasswordRequest)
         {
             var response = await Sender.Send(new ChangeUserPasswordCommand { ChangePassword = changePasswordRequest });
             if (response.IsSuccessful)
@@ -74,7 +74,7 @@ namespace WebApi.Controllers
 
         [HttpPut("change-status")]
         [MustHavePermission(AppService.Identity, AppFeature.Users, AppAction.Update)]
-        public async Task<IActionResult> ChangeUserStatusAsync([FromBody] ChangeUserStatusRequest changeUserStatusRequest)
+        public async Task<IActionResult> ChangeUserStatus([FromBody] ChangeUserStatusRequest changeUserStatusRequest)
         {
             var response = await Sender.Send(new ChangeUserStatusCommand { ChangeUserStatus = changeUserStatusRequest });
             if (response.IsSuccessful)
@@ -86,7 +86,7 @@ namespace WebApi.Controllers
 
         [HttpPut("user-roles")]
         [MustHavePermission(AppService.Identity, AppFeature.UserRoles, AppAction.Update)]
-        public async Task<IActionResult> UpdateUserRolesAsync([FromBody] UpdateUserRolesRequest updateUserRolesRequest)
+        public async Task<IActionResult> UpdateUserRoles([FromBody] UpdateUserRolesRequest updateUserRolesRequest)
         {
             var response = await Sender.
                 Send(new UpdateUserRolesCommand { UpdateUserRolesRequest = updateUserRolesRequest });
